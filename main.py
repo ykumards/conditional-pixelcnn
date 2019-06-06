@@ -12,9 +12,17 @@ import model
 import train
 from vis import generate_between_classes
 
-def run(dataset='mnist', batch_size=64, n_features=200, n_layers=6, n_bins=4,
-        optimizer='adam', learnrate=1e-4, dropout=0.9, exp_name='pixelCNN',
-        exp_dir='~/experiments/conditional-pixelcnn/', cuda=True,
+def run(dataset='mnist', 
+        batch_size=64, 
+        n_features=200, 
+        n_layers=6, 
+        n_bins=4,
+        optimizer='adam', 
+        learnrate=1e-4, 
+        dropout=0.9, 
+        exp_name='pixelCNN',
+        exp_dir='~/experiments/conditional-pixelcnn/', 
+        cuda=True,
         resume=False):
 
     exp_name += '_%s_%ifeat_%ilayers_%ibins'%(

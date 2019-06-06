@@ -7,7 +7,6 @@ import os
 
 import imageio
 import matplotlib
-# Disable Xwindows backend before importing matplotlib.pyplot
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,7 +15,7 @@ import torch
 from torch.autograd import Variable
 
 
-def plot_stats(stats,savepath):
+def plot_stats(stats, savepath):
     """
     Make all the plots in stats. Stats can be a dict or a path to json (str)
     """
@@ -79,8 +78,12 @@ def generate(model, img_size, y, temp=0.8, cuda=True):
     return (255*gen.data.cpu().numpy()).astype('uint8')
 
 
-def generate_between_classes(model, img_size, classes, saveto,
-                             n_classes, cuda=True):
+def generate_between_classes(model, 
+                             img_size, 
+                             classes, 
+                             saveto,
+                             n_classes, 
+                             cuda=True):
     y = np.zeros((1,n_classes), dtype='float32')
     y[:,classes] = 1/len(classes)
     y = np.repeat(y,10,axis=0)
@@ -88,7 +91,7 @@ def generate_between_classes(model, img_size, classes, saveto,
     imageio.imsave(saveto,gen.astype('uint8'))
 
 
-def tile_images(imgs,r=0):
+def tile_images(imgs, r=0):
     n = len(imgs)
     h = imgs[0].shape[1]
     w = imgs[0].shape[2]

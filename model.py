@@ -67,7 +67,12 @@ class GatedRes(nn.Module):
 
 
 class PixelCNN(nn.Module):
-    def __init__(self,in_channels,n_classes,n_features,n_layers,n_bins,
+    def __init__(self,
+                 in_channels,
+                 n_classes,
+                 n_features,
+                 n_layers,
+                 n_bins,
                  dropout=0.5):
         super(PixelCNN,self).__init__()
 
@@ -79,8 +84,11 @@ class PixelCNN(nn.Module):
         for l in range(n_layers):
             if l==0:  # start with normal conv
                 block = nn.Sequential(
-                    MaskedConv('A',in_channels+1,n_features,kernel_size=7),
-                    nn.BatchNorm2d(n_features,momentum=0.1),
+                    MaskedConv('A',
+                                in_channels+1,
+                                n_features,
+                                kernel_size=7),
+                    nn.BatchNorm2d(n_features, momentum=0.1),
                     nn.ReLU())
             else:
                 block = GatedRes(n_features, n_features, n_classes)
@@ -88,25 +96,27 @@ class PixelCNN(nn.Module):
 
         # Down pass
         for _ in range(n_layers):
-            block = GatedRes(n_features, n_features,n_classes,
+            block = GatedRes(n_features, 
+                             n_features, 
+                             n_classes,
                              aux_channels=n_features)
             self.layers.append(block)
 
         # Last layer: project to n_bins (output is [-1, n_bins, h, w])
         self.dropout = nn.Dropout2d(dropout)
-        self.layers.append(GatedRes(n_features,n_bins,n_classes))
+        self.layers.append(GatedRes(n_features, n_bins, n_classes))
         self.layers.append(nn.LogSoftmax(dim=1))
 
     def forward(self,x,y):
         # Add channel of ones so network can tell where padding is
-        x = nn.functional.pad(x,(0,0,0,0,0,1,0,0),mode='constant',value=1)
+        x = nn.functional.pad(x, (0,0,0,0,0,1,0,0), mode='constant', value=1)
 
         # Up pass
         features = []
         i = -1
         for _ in range(self.n_layers):
             i += 1
-            if i>0:
+            if i > 0:
                 x = self.layers[i](x,y)
             else:
                 x = self.layers[i](x)
@@ -115,16 +125,16 @@ class PixelCNN(nn.Module):
         # Down pass
         for _ in range(self.n_layers):
             i += 1
-            x = self.layers[i](torch.stack((x,features.pop())),y)
+            x = self.layers[i](torch.stack((x, features.pop())), y)
 
         # Last layer
         x = self.dropout(x)
         i += 1
-        x = self.layers[i](x,y)
+        x = self.layers[i](x, y)
         i += 1
         x = self.layers[i](x)
-        assert i==len(self.layers)-1
-        assert len(features)==0
+        assert i == len(self.layers)-1
+        assert len(features) == 0
         return x
 
 
