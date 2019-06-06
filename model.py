@@ -7,7 +7,12 @@ import torch.nn as nn
 
 
 class MaskedConv(nn.Conv2d):
-    def __init__(self,mask_type,in_channels,out_channels,kernel_size,stride=1):
+    def __init__(self, 
+                 mask_type, 
+                 in_channels, 
+                 out_channels, 
+                 kernel_size, 
+                 stride=1):
         """
         mask_type: 'A' for first layer of network, 'B' for all others
         """
@@ -25,7 +30,12 @@ class MaskedConv(nn.Conv2d):
 
 
 class GatedRes(nn.Module):
-    def __init__(self,in_channels,out_channels,n_classes,kernel_size=3,stride=1,
+    def __init__(self,
+                 in_channels,
+                 out_channels,
+                 n_classes,
+                 kernel_size=3,
+                 stride=1,
                  aux_channels=0):
         super(GatedRes,self).__init__()
         self.conv = MaskedConv('B',in_channels,2*out_channels,kernel_size,
@@ -42,7 +52,7 @@ class GatedRes(nn.Module):
                 nn.BatchNorm2d(out_channels,momentum=0.1))
         self.batchnorm = nn.BatchNorm2d(out_channels,momentum=0.1)
 
-    def forward(self,x,y):
+    def forward(self, x, y):
         # check for aux input from first half of net stacked into x
         if x.dim()==5:
             x,aux = torch.split(x,1,dim=0)
@@ -51,14 +61,14 @@ class GatedRes(nn.Module):
         else:
             aux = None
         x1 = self.conv(x)
-        y = torch.unsqueeze(torch.unsqueeze(self.y_embed(y),-1),-1)
+        y = torch.unsqueeze(torch.unsqueeze(self.y_embed(y), -1), -1)
         if aux is not None:
             if hasattr(self,'aux_shortcut'):
                 aux = self.aux_shortcut(aux)
             x1 = (x1+aux)/2
         # split for gate (note: pytorch dims are [n,c,h,w])
-        xf,xg = torch.split(x1,self.out_channels,dim=1)
-        yf,yg = torch.split(y,self.out_channels,dim=1)
+        xf,xg = torch.split(x1, self.out_channels, dim=1)
+        yf,yg = torch.split(y, self.out_channels, dim=1)
         f = torch.tanh(xf+yf)
         g = torch.sigmoid(xg+yg)
         if hasattr(self,'shortcut'):

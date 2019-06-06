@@ -44,8 +44,9 @@ def run(dataset='mnist',
             json.dump(params,f)
 
         # Model
-        net = model.PixelCNN(1, n_classes, n_features, n_layers, n_bins,
-                             dropout)
+        net = model.PixelCNN(1, n_classes, n_features, 
+                             n_layers, n_bins, dropout)
+        
     else:
         # if resuming, need to have params, stats and checkpoint files
         if not (os.path.isfile(os.path.join(exp_dir,'params.json'))
@@ -54,6 +55,7 @@ def run(dataset='mnist',
             raise Exception('Missing param, stats or checkpoint file on resume')
         net = torch.load(os.path.join(exp_dir, 'last_checkpoint'))
 
+    print(net)
     # Define loss fcn, incl. label formatting from input
     def input2label(x):
         return torch.squeeze(torch.round((n_bins-1)*x).type(torch.LongTensor),1)
@@ -75,4 +77,5 @@ def run(dataset='mnist',
                              os.path.join(exp_dir,'5-6.jpeg'), n_classes, cuda)
 
 
-
+if __name__ == "__main__":
+    run(n_features=300, n_layers=8, learnrate=3e-4, dropout=0.7)
